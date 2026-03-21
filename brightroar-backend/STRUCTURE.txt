@@ -1,0 +1,34 @@
+brightroar-backend/
+├── app/
+│   ├── main.py
+│   ├── config.py
+│   ├── database.py
+│   ├── redis_client.py
+│   ├── models/
+│   │   ├── __init__.py
+│   │   ├── user.py
+│   │   ├── wallet.py
+│   │   └── transaction.py
+│   ├── schemas/
+│   │   ├── __init__.py
+│   │   ├── auth.py
+│   │   ├── wallet.py
+│   │   └── transaction.py
+│   ├── routers/
+│   │   ├── __init__.py
+│   │   ├── auth.py
+│   │   ├── wallets.py
+│   │   ├── transactions.py
+│   │   └── analytics.py
+│   └── core/
+│       ├── __init__.py
+│       ├── security.py
+│       └── dependencies.py
+├── alembic/
+│   ├── env.py
+│   └── versions/
+├── alembic.ini
+├── requirements.txt
+├── Dockerfile
+├── docker-compose.yml
+└── .env.example

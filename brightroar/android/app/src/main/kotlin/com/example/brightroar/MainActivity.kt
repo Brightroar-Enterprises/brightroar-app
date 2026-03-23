@@ -1,4 +1,4 @@
-package com.example.brightroar
+package com.brightroar.app
 
 import io.flutter.embedding.android.FlutterActivity
 

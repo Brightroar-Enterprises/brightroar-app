@@ -96,8 +96,7 @@ async def create_transfer(
     if not from_wallet:
         raise HTTPException(status_code=404, detail="Source wallet not found")
 
-    if from_wallet.balance < payload.amount:
-        raise HTTPException(status_code=400, detail="Insufficient balance")
+    # Balance check done below after fee is calculated
 
     # Determine transfer type
     is_internal = payload.to_wallet_id is not None
@@ -116,10 +115,43 @@ async def create_transfer(
         if not to_wallet:
             raise HTTPException(status_code=404, detail="Destination wallet not found")
 
-    # Debit source
-    from_wallet.balance -= payload.amount
+        # ── Same-currency check ───────────────────────────────────────────────
+        if from_wallet.asset_symbol != to_wallet.asset_symbol:
+            raise HTTPException(
+                status_code=400,
+                detail=(
+                    f"Currency mismatch: source wallet is {from_wallet.asset_symbol.value} "
+                    f"but destination wallet is {to_wallet.asset_symbol.value}. "
+                    f"Transfers are only allowed between wallets of the same currency."
+                ),
+            )
 
-    # Credit destination (internal only)
+        # ── asset_symbol must match the wallet currency ───────────────────────
+        if payload.asset_symbol.upper() != from_wallet.asset_symbol.value:
+            raise HTTPException(
+                status_code=400,
+                detail=(
+                    f"Asset mismatch: requested {payload.asset_symbol} "
+                    f"but source wallet holds {from_wallet.asset_symbol.value}."
+                ),
+            )
+
+    # ── Sufficient balance including fee ─────────────────────────────────────
+    total_debit = payload.amount + FLAT_FEE_USDT
+    if from_wallet.balance < total_debit:
+        raise HTTPException(
+            status_code=400,
+            detail=(
+                f"Insufficient balance. Required: {total_debit} "
+                f"(amount {payload.amount} + fee {FLAT_FEE_USDT}), "
+                f"available: {from_wallet.balance}."
+            ),
+        )
+
+    # ── Debit source (amount + fee) ───────────────────────────────────────────
+    from_wallet.balance -= total_debit
+
+    # ── Credit destination (internal only, no fee charged to receiver) ────────
     if to_wallet:
         to_wallet.balance += payload.amount
         status = TransactionStatus.CONFIRMED
@@ -135,9 +167,9 @@ async def create_transfer(
         to_external_address=payload.to_external_address,
         tx_type=tx_type,
         status=status,
-        asset_symbol=payload.asset_symbol,
+        asset_symbol=from_wallet.asset_symbol.value,
         amount=payload.amount,
-        amount_usd=payload.amount,  # simplified 1:1 for USDT
+        amount_usd=payload.amount,  # simplified 1:1 for USDT; extend with price lookup for other assets
         fee=FLAT_FEE_USDT,
         fee_usd=FLAT_FEE_USDT,
         description=payload.description,

@@ -2,17 +2,30 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from datetime import datetime, timezone
+from decimal import Decimal
 from pydantic import BaseModel
+import logging
 
 from app.database import get_db
 from app.models.user import User
+from app.models.wallet import Wallet, WalletType, AssetSymbol
 from app.models.binance_credential import BinanceCredential
 from app.core.dependencies import get_current_active_user
 from app.core.encryption import encrypt, decrypt
 from app.services.binance_service import BinanceService, BinanceAPIError, BinanceConnectionError
 from app.redis_client import cache_get, cache_set, cache_delete_pattern
 
+logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/binance", tags=["Binance Account"])
+
+# Major currencies we auto-create wallets for when Binance is connected
+BINANCE_WALLET_ASSETS = [
+    AssetSymbol.BTC,
+    AssetSymbol.ETH,
+    AssetSymbol.USDT,
+    AssetSymbol.SOL,
+    AssetSymbol.DOT,
+]
 
 
 class SaveCredentialsRequest(BaseModel):
@@ -54,7 +67,104 @@ async def _get_credential(user_id, db: AsyncSession) -> BinanceCredential:
     return cred
 
 
-@router.post("/credentials", response_model=CredentialsResponse, status_code=201)
+async def _sync_binance_wallets(
+    user_id,
+    api_key: str,
+    api_secret: str,
+    db: AsyncSession,
+) -> list[dict]:
+    """
+    Auto-create or update exchange wallets for each major crypto from Binance spot balances.
+    - Creates wallet if it doesn't exist yet (wallet_type=exchange, exchange_name=Binance)
+    - Updates balance if wallet already exists
+    - Returns list of created/updated wallet summaries
+    """
+    binance = BinanceService()
+
+    # Fetch live spot balances and prices in parallel
+    try:
+        spot_balances, price_map = await __import__("asyncio").gather(
+            binance.get_spot_balances(api_key, api_secret),
+            binance._build_price_map(),
+            return_exceptions=False,
+        )
+    except Exception as e:
+        logger.warning(f"Could not fetch Binance balances for wallet sync: {e}")
+        spot_balances = []
+        price_map = {}
+
+    # Build a lookup: asset -> balance from Binance
+    binance_balance: dict[str, Decimal] = {}
+    for b in spot_balances:
+        binance_balance[b["asset"]] = Decimal(b.get("total", "0"))
+
+    synced = []
+    for asset in BINANCE_WALLET_ASSETS:
+        asset_str = asset.value  # e.g. "BTC"
+
+        # Check if a Binance exchange wallet already exists for this asset
+        result = await db.execute(
+            select(Wallet).where(
+                Wallet.user_id == user_id,
+                Wallet.asset_symbol == asset,
+                Wallet.wallet_type == WalletType.EXCHANGE,
+                Wallet.exchange_name == "Binance",
+                Wallet.is_active == True,
+            )
+        )
+        wallet = result.scalar_one_or_none()
+
+        # Get balance from Binance (0 if not held)
+        balance = binance_balance.get(asset_str, Decimal("0"))
+        price = price_map.get(asset_str, Decimal("1") if asset_str in ("USDT", "USD") else Decimal("0"))
+        balance_usd = balance * price
+
+        if wallet:
+            # Update existing wallet balance
+            wallet.balance = balance
+            wallet.balance_usd = balance_usd
+            action = "updated"
+        else:
+            # Create new Binance exchange wallet
+            wallet = Wallet(
+                user_id=user_id,
+                name=f"Binance {asset_str}",
+                wallet_type=WalletType.EXCHANGE,
+                asset_symbol=asset,
+                exchange_name="Binance",
+                balance=balance,
+                balance_usd=balance_usd,
+            )
+            db.add(wallet)
+            action = "created"
+
+        synced.append({
+            "asset": asset_str,
+            "action": action,
+            "balance": str(balance),
+            "balance_usd": str(round(balance_usd, 2)),
+        })
+
+    await db.flush()
+    await cache_delete_pattern(f"user:{user_id}:wallets*")
+    await cache_delete_pattern(f"user:{user_id}:analytics*")
+    logger.info(f"Binance wallet sync complete for user {user_id}: {synced}")
+    return synced
+
+
+@router.post("/sync-wallets")
+async def sync_binance_wallets(
+    current_user: User = Depends(get_current_active_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Manually re-sync Binance exchange wallet balances from live Binance spot account.
+    Call this anytime to refresh balances without re-entering API keys.
+    """
+    cred = await _get_credential(current_user.id, db)
+    api_secret = decrypt(cred.encrypted_secret)
+    synced = await _sync_binance_wallets(current_user.id, cred.api_key, api_secret, db)
+    return {"synced": synced, "count": len(synced)}
 async def save_credentials(
     payload: SaveCredentialsRequest,
     current_user: User = Depends(get_current_active_user),
@@ -88,6 +198,9 @@ async def save_credentials(
     await db.flush()
     await db.refresh(cred)
     await cache_delete_pattern(f"user:{current_user.id}:binance*")
+
+    # ── Auto-create / sync Binance exchange wallets ───────────────────────────
+    await _sync_binance_wallets(current_user.id, payload.api_key, payload.api_secret, db)
 
     return CredentialsResponse(
         id=str(cred.id), label=cred.label,

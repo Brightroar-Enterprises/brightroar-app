@@ -34,6 +34,9 @@ class Settings(BaseSettings):
     # CORS
     allowed_origins: str = "http://localhost:3000"
 
+    # Etherscan — on-chain balance sync
+    etherscan_api_key: str = ""  # Get free key at https://etherscan.io/myapikey
+
     @property
     def origins_list(self) -> list[str]:
         return [o.strip() for o in self.allowed_origins.split(",")]

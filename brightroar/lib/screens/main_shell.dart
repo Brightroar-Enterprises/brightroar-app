@@ -5,6 +5,7 @@ import 'wallets_screen.dart';
 import 'analytics_screen.dart';
 import 'activity_screen.dart';
 import 'settings_screen.dart';
+import 'property_scout_screen.dart';
 
 class MainShell extends StatefulWidget {
   const MainShell({super.key});
@@ -20,6 +21,7 @@ class _MainShellState extends State<MainShell> {
     WalletsScreen(),
     AnalyticsScreen(),
     ActivityScreen(),
+    PropertyScoutScreen(),
     SettingsScreen(),
   ];
 
@@ -40,14 +42,33 @@ class _MainShellState extends State<MainShell> {
           unselectedItemColor: AppTheme.textTertiary,
           type: BottomNavigationBarType.fixed,
           elevation: 0,
-          selectedFontSize: 11,
-          unselectedFontSize: 11,
+          selectedFontSize: 10,
+          unselectedFontSize: 10,
           items: const [
-            BottomNavigationBarItem(icon: Icon(Icons.dashboard_outlined), activeIcon: Icon(Icons.dashboard), label: 'Dashboard'),
-            BottomNavigationBarItem(icon: Icon(Icons.account_balance_wallet_outlined), activeIcon: Icon(Icons.account_balance_wallet), label: 'Wallets'),
-            BottomNavigationBarItem(icon: Icon(Icons.bar_chart_outlined), activeIcon: Icon(Icons.bar_chart), label: 'Analytics'),
-            BottomNavigationBarItem(icon: Icon(Icons.receipt_long_outlined), activeIcon: Icon(Icons.receipt_long), label: 'Activity'),
-            BottomNavigationBarItem(icon: Icon(Icons.settings_outlined), activeIcon: Icon(Icons.settings), label: 'Settings'),
+            BottomNavigationBarItem(
+                icon: Icon(Icons.dashboard_outlined),
+                activeIcon: Icon(Icons.dashboard),
+                label: 'Dashboard'),
+            BottomNavigationBarItem(
+                icon: Icon(Icons.account_balance_wallet_outlined),
+                activeIcon: Icon(Icons.account_balance_wallet),
+                label: 'Wallets'),
+            BottomNavigationBarItem(
+                icon: Icon(Icons.bar_chart_outlined),
+                activeIcon: Icon(Icons.bar_chart),
+                label: 'Analytics'),
+            BottomNavigationBarItem(
+                icon: Icon(Icons.receipt_long_outlined),
+                activeIcon: Icon(Icons.receipt_long),
+                label: 'Activity'),
+            BottomNavigationBarItem(
+                icon: Icon(Icons.home_work_outlined),
+                activeIcon: Icon(Icons.home_work),
+                label: 'Scout'),
+            BottomNavigationBarItem(
+                icon: Icon(Icons.settings_outlined),
+                activeIcon: Icon(Icons.settings),
+                label: 'Settings'),
           ],
         ),
       ),

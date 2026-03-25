@@ -7,6 +7,7 @@ from app.database import init_db
 from app.redis_client import get_redis, close_redis
 from app.routers import auth, wallets, transactions, analytics, market
 from app.routers import binance as binance_router
+from app.routers import property_scout as property_router
 
 settings = get_settings()
 

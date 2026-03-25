@@ -288,6 +288,37 @@ class ApiClient {
   static Future<Map<String, dynamic>> getBinancePnl(
           {String period = 'all'}) async =>
       await request('GET', '/binance/pnl', queryParams: {'period': period});
+  // ── Property Scout ─────────────────────────────────────────────────────────
+  static Future<Map<String, dynamic>> searchProperties({
+    required String location,
+    List<String> crimeRates = const [],
+    List<String> roiRanges = const [],
+    List<String> marketStatus = const [],
+    List<String> propertyTypes = const [],
+    List<String> timelines = const [],
+  }) async =>
+      await request('GET', '/property/search', queryParams: {
+        'location': location,
+        if (crimeRates.isNotEmpty) 'crime_rates': crimeRates.join(','),
+        if (roiRanges.isNotEmpty) 'roi_ranges': roiRanges.join(','),
+        if (marketStatus.isNotEmpty) 'market_status': marketStatus.join(','),
+        if (propertyTypes.isNotEmpty) 'property_types': propertyTypes.join(','),
+        if (timelines.isNotEmpty) 'timelines': timelines.join(','),
+      });
+
+  static Future<Map<String, dynamic>> getPropertyDetail(String zpid) async =>
+      await request('GET', '/property/detail/$zpid');
+
+  static Future<Map<String, dynamic>> getNeighborhoodStats(
+          String location) async =>
+      await request('GET', '/property/neighborhood',
+          queryParams: {'location': location});
+
+  static Future<Map<String, dynamic>> getPropertyTrends(
+          String location) async =>
+      await request('GET', '/property/trends',
+          queryParams: {'location': location});
+
 }
 
 class ApiException implements Exception {

@@ -35,7 +35,8 @@ class Settings(BaseSettings):
     allowed_origins: str = "http://localhost:3000"
 
     # Etherscan — on-chain balance sync
-    etherscan_api_key: str = ""  # Get free key at https://etherscan.io/myapikey
+    etherscan_api_key: str = ""
+    rapidapi_key: str = ""  # Get free key at https://rapidapi.com (search "Zillow Com1")  # Get free key at https://etherscan.io/myapikey
 
     @property
     def origins_list(self) -> list[str]:

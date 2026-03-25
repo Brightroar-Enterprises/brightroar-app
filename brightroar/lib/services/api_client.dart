@@ -319,6 +319,11 @@ class ApiClient {
       await request('GET', '/property/trends',
           queryParams: {'location': location});
 
+  static Future<Map<String, dynamic>> getPropertyPortfolio() async =>
+      await request('GET', '/property/portfolio');
+
+  static Future<Map<String, dynamic>> getPortfolioAnalysis() async =>
+      await request('GET', '/property/portfolio/analysis');
 }
 
 class ApiException implements Exception {

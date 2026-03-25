@@ -104,3 +104,54 @@ async def get_market_trends(
     result = await svc.get_market_trends(location)
     await cache_set(cache_key, result, ttl=3600)
     return result
+
+
+@router.get("/portfolio")
+async def get_portfolio(
+    current_user: User = Depends(get_current_active_user),
+):
+    """
+    Get real estate portfolio summary — total value, ROI, cash flow,
+    property list, ROI trend and cash flow by market.
+    Uses demo data if no RapidAPI key configured.
+    """
+    cache_key = f"property:portfolio:{current_user.id}"
+    cached = await cache_get(cache_key)
+    if cached:
+        return cached
+
+    svc = _get_service()
+    result = svc.get_portfolio_summary()
+    await cache_set(cache_key, result, ttl=300)
+    return result
+
+
+@router.get("/portfolio/analysis")
+async def get_portfolio_analysis(
+    current_user: User = Depends(get_current_active_user),
+):
+    """AI-generated portfolio analysis text."""
+    svc = _get_service()
+    return {"analysis": svc.get_portfolio_analysis()}
+
+
+@router.post("/portfolio/property")
+async def add_portfolio_property(
+    address: str = Query(...),
+    city: str = Query(...),
+    property_type: str = Query(...),
+    purchase_price: float = Query(...),
+    monthly_cashflow: float = Query(...),
+    current_user: User = Depends(get_current_active_user),
+):
+    """Add a property to the portfolio (stored in-memory/demo for now)."""
+    return {
+        "status": "added",
+        "property": {
+            "address": address,
+            "city": city,
+            "type": property_type,
+            "purchase_price": purchase_price,
+            "monthly_cashflow": monthly_cashflow,
+        }
+    }

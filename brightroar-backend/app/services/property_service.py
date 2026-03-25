@@ -115,7 +115,6 @@ class PropertyService:
         properties = await self.search_properties(location, property_types, limit=12)
         neighborhood = await self.get_neighborhood_stats(location)
 
-        # Score and filter based on criteria
         scored = []
         for p in properties:
             score = self._investment_score(p, crime_rates, roi_ranges, market_status)
@@ -123,7 +122,6 @@ class PropertyService:
             p["neighborhood"] = neighborhood
             scored.append(p)
 
-        # Sort by investment score
         scored.sort(key=lambda x: x["investment_score"], reverse=True)
 
         return {
@@ -133,8 +131,6 @@ class PropertyService:
             "neighborhood_summary": neighborhood,
             "ai_summary": self._generate_summary(location, scored[:3], neighborhood),
         }
-
-    # ── Past Suggestions Tracking ──────────────────────────────────────────────
 
     async def get_market_trends(self, location: str) -> dict:
         """Get rent growth and price appreciation trends."""
@@ -146,6 +142,72 @@ class PropertyService:
         except Exception as e:
             logger.warning(f"Market trends failed for {location}: {e}")
             return self._demo_trends(location)
+
+    # ── Portfolio ──────────────────────────────────────────────────────────────
+
+    def get_portfolio_summary(self) -> dict:
+        """Return portfolio summary with properties, stats and chart data."""
+        properties = [
+            {
+                "city": "AUSTIN",
+                "address": "123 Oak St",
+                "type": "Single-Family",
+                "roi": 8.5,
+                "cashflow": 4000,
+                "value": 1200000,
+                "status": "up",
+            },
+            {
+                "city": "DALLAS",
+                "address": "456 Elm St",
+                "type": "Condo",
+                "roi": 6.8,
+                "cashflow": 3000,
+                "value": 980000,
+                "status": "down",
+            },
+            {
+                "city": "HOUSTON",
+                "address": "789 Pine St",
+                "type": "Multi-Family",
+                "roi": 9.1,
+                "cashflow": 11500,
+                "value": 1220000,
+                "status": "up",
+            },
+        ]
+
+        total_value = sum(p["value"] for p in properties)
+        avg_roi = sum(p["roi"] for p in properties) / len(properties)
+        total_cashflow = sum(p["cashflow"] for p in properties)
+
+        return {
+            "total_value": total_value,
+            "annual_roi": round(avg_roi, 1),
+            "roi_target": 8.0,
+            "net_cashflow_monthly": total_cashflow,
+            "properties": properties,
+            "roi_trend": {
+                "target": [8.0, 8.0, 8.0, 8.0, 8.0, 8.0],
+                "actual": [7.2, 7.8, 8.1, 7.9, 8.2, 7.9],
+                "months": ["Oct", "Nov", "Dec", "Jan", "Feb", "Mar"],
+            },
+            "cashflow_by_market": {
+                "Austin": 4000,
+                "Dallas": 3000,
+                "Houston": 11500,
+            },
+        }
+
+    def get_portfolio_analysis(self) -> str:
+        return (
+            "Your overall portfolio ROI has dipped slightly below your 8% target this month. "
+            "This is primarily due to a temporary increase in maintenance costs for the "
+            "multi-family property. Cash flow remains strong, but let's review your "
+            "cost-optimization strategies. We should also consider expanding into the "
+            "emerging San Antonio market, which matches your gentrifying criteria and "
+            "high-growth trend."
+        )
 
     # ── Helpers ────────────────────────────────────────────────────────────────
 
@@ -191,11 +253,16 @@ class PropertyService:
             return round((rent * 12 / price) * 100, 1)
         return round(6.0 + (hash(str(p.get("address", ""))) % 30) / 10, 1)
 
-    def _investment_score(self, p: dict, crime_rates: list, roi_ranges: list, market_status: list) -> float:
+    def _investment_score(
+        self,
+        p: dict,
+        crime_rates: list,
+        roi_ranges: list,
+        market_status: list,
+    ) -> float:
         score = 50.0
         roi = p.get("roi_estimate", 6.0)
 
-        # ROI scoring
         if ">11%" in roi_ranges and roi > 11:
             score += 30
         elif "9-11%" in roi_ranges and roi >= 9:
@@ -205,7 +272,6 @@ class PropertyService:
         elif "5-7%" in roi_ranges and roi >= 5:
             score += 10
 
-        # General ROI boost
         score += min(roi * 2, 20)
 
         return round(score, 1)
@@ -233,42 +299,98 @@ class PropertyService:
             "price_growth_yoy": data.get("priceGrowthYoY", 7.8),
         }
 
-    # ── Demo Data (used when no API key) ──────────────────────────────────────
+    # ── Demo Data ──────────────────────────────────────────────────────────────
 
     def _demo_properties(self, location: str) -> list[dict]:
         city = location.split(",")[0].strip()
         return [
             {
-                "zpid": "1", "address": f"East {city}", "city": city, "state": "TX",
-                "price": 485000, "beds": 3, "baths": 2, "sqft": 1850, "img": "",
-                "lat": 30.2672, "lng": -97.7231, "property_type": "Single-Family",
-                "days_on_market": 12, "zestimate": 492000, "rent_zestimate": 2800,
-                "roi_estimate": 7.8, "crime_level": "Very Low", "school_rating": "8/10",
-                "market_trend": "High Growth", "investment_score": 88.0,
+                "zpid": "1",
+                "address": f"East {city}",
+                "city": city,
+                "state": "TX",
+                "price": 485000,
+                "beds": 3,
+                "baths": 2,
+                "sqft": 1850,
+                "img": "",
+                "lat": 30.2672,
+                "lng": -97.7231,
+                "property_type": "Single-Family",
+                "days_on_market": 12,
+                "zestimate": 492000,
+                "rent_zestimate": 2800,
+                "roi_estimate": 7.8,
+                "crime_level": "Very Low",
+                "school_rating": "8/10",
+                "market_trend": "High Growth",
+                "investment_score": 88.0,
             },
             {
-                "zpid": "2", "address": f"South Congress, {city}", "city": city, "state": "TX",
-                "price": 520000, "beds": 4, "baths": 3, "sqft": 2100, "img": "",
-                "lat": 30.2472, "lng": -97.7531, "property_type": "Townhouse",
-                "days_on_market": 8, "zestimate": 528000, "rent_zestimate": 3100,
-                "roi_estimate": 7.2, "crime_level": "Low", "school_rating": "7/10",
-                "market_trend": "Stable Growth", "investment_score": 82.0,
+                "zpid": "2",
+                "address": f"South Congress, {city}",
+                "city": city,
+                "state": "TX",
+                "price": 520000,
+                "beds": 4,
+                "baths": 3,
+                "sqft": 2100,
+                "img": "",
+                "lat": 30.2472,
+                "lng": -97.7531,
+                "property_type": "Townhouse",
+                "days_on_market": 8,
+                "zestimate": 528000,
+                "rent_zestimate": 3100,
+                "roi_estimate": 7.2,
+                "crime_level": "Low",
+                "school_rating": "7/10",
+                "market_trend": "Stable Growth",
+                "investment_score": 82.0,
             },
             {
-                "zpid": "3", "address": f"North Loop, {city}", "city": city, "state": "TX",
-                "price": 398000, "beds": 2, "baths": 2, "sqft": 1400, "img": "",
-                "lat": 30.2872, "lng": -97.7131, "property_type": "Condo",
-                "days_on_market": 20, "zestimate": 405000, "rent_zestimate": 2300,
-                "roi_estimate": 6.9, "crime_level": "Low", "school_rating": "7/10",
-                "market_trend": "Emerging", "investment_score": 76.0,
+                "zpid": "3",
+                "address": f"North Loop, {city}",
+                "city": city,
+                "state": "TX",
+                "price": 398000,
+                "beds": 2,
+                "baths": 2,
+                "sqft": 1400,
+                "img": "",
+                "lat": 30.2872,
+                "lng": -97.7131,
+                "property_type": "Condo",
+                "days_on_market": 20,
+                "zestimate": 405000,
+                "rent_zestimate": 2300,
+                "roi_estimate": 6.9,
+                "crime_level": "Low",
+                "school_rating": "7/10",
+                "market_trend": "Emerging",
+                "investment_score": 76.0,
             },
             {
-                "zpid": "4", "address": f"Mueller District, {city}", "city": city, "state": "TX",
-                "price": 612000, "beds": 4, "baths": 3, "sqft": 2400, "img": "",
-                "lat": 30.2972, "lng": -97.7031, "property_type": "Single-Family",
-                "days_on_market": 5, "zestimate": 625000, "rent_zestimate": 3400,
-                "roi_estimate": 6.5, "crime_level": "Very Low", "school_rating": "9/10",
-                "market_trend": "Stable Growth", "investment_score": 74.0,
+                "zpid": "4",
+                "address": f"Mueller District, {city}",
+                "city": city,
+                "state": "TX",
+                "price": 612000,
+                "beds": 4,
+                "baths": 3,
+                "sqft": 2400,
+                "img": "",
+                "lat": 30.2972,
+                "lng": -97.7031,
+                "property_type": "Single-Family",
+                "days_on_market": 5,
+                "zestimate": 625000,
+                "rent_zestimate": 3400,
+                "roi_estimate": 6.5,
+                "crime_level": "Very Low",
+                "school_rating": "9/10",
+                "market_trend": "Stable Growth",
+                "investment_score": 74.0,
             },
         ]
 

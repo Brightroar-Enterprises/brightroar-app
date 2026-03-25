@@ -49,6 +49,7 @@ app.include_router(transactions.router, prefix="/api/v1")
 app.include_router(analytics.router,    prefix="/api/v1")
 app.include_router(market.router,       prefix="/api/v1")
 app.include_router(binance_router.router, prefix="/api/v1")
+app.include_router(property_router.router, prefix="/api/v1")  # ← add this
 
 
 # ── Health check ──────────────────────────────────────────────────────────────

@@ -33,7 +33,6 @@ class AppTheme {
       colorScheme: const ColorScheme.dark(
         primary: primary,
         surface: surface,
-        background: background,
       ),
       fontFamily: 'SF Pro Display',
       appBarTheme: const AppBarTheme(

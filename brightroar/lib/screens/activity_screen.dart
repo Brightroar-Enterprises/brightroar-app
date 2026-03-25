@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
-import '../widgets/glass_card.dart';
 import '../services/api_client.dart';
 
 class ActivityScreen extends StatefulWidget {

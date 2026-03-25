@@ -5,6 +5,7 @@ import '../theme/app_theme.dart';
 import '../widgets/glass_card.dart';
 import '../services/api_client.dart';
 import '../services/auth_provider.dart';
+import 'signin_screen.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -360,7 +361,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       GlassCard(
         padding: EdgeInsets.zero,
         child: Column(children: [
-          _settingsTile(Icons.fingerprint, 'Biometric Authentication', 'Use Face ID or fingerprint', trailing: Switch(value: false, onChanged: (_) {}, activeColor: AppTheme.primary)),
+          _settingsTile(Icons.fingerprint, 'Biometric Authentication', 'Use Face ID or fingerprint', trailing: Switch(value: false, onChanged: (_) {}, activeThumbColor: AppTheme.primary)),
           const Divider(color: AppTheme.border, height: 1),
           _settingsTile(Icons.lock_reset_outlined, 'Change Password', 'Update your corporate password', onTap: () {}),
           const Divider(color: AppTheme.border, height: 1),
@@ -398,6 +399,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
       child: OutlinedButton.icon(
         onPressed: () async {
           await auth.logout();
+          if (!context.mounted) return;
+          Navigator.of(context).pushAndRemoveUntil(
+            MaterialPageRoute(builder: (_) => const SignInScreen()),
+            (route) => false,
+          );
         },
         icon: const Icon(Icons.logout, size: 18, color: AppTheme.negative),
         label: const Text('Sign Out', style: TextStyle(color: AppTheme.negative, fontWeight: FontWeight.w600)),

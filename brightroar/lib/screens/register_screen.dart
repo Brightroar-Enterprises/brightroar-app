@@ -76,7 +76,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
               const SizedBox(height: 16),
               Row(children: [
                 GestureDetector(
-                  onTap: () { if (_step > 1) setState(() => _step--); else Navigator.pop(context); },
+                  onTap: () { if (_step > 1) {
+                    setState(() => _step--);
+                  } else {
+                    Navigator.pop(context);
+                  } },
                   child: Container(
                     width: 40, height: 40,
                     decoration: BoxDecoration(color: AppTheme.surfaceElevated, borderRadius: BorderRadius.circular(10), border: Border.all(color: AppTheme.border)),

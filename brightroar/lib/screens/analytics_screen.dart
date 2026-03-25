@@ -54,9 +54,9 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
         ApiClient.getProfitHistory(),
       ]);
       setState(() {
-        _portfolio = results[0] as Map<String, dynamic>;
-        _performance = results[1] as Map<String, dynamic>;
-        _profit = results[2] as Map<String, dynamic>;
+        _portfolio = results[0];
+        _performance = results[1];
+        _profit = results[2];
         _loading = false;
       });
       _loadPnl();
@@ -225,7 +225,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                 borderRadius: BorderRadius.circular(8),
                 border: Border.all(
                     color: const Color(0xFFF0B90B).withOpacity(0.3))),
-            child: Row(children: const [
+            child: const Row(children: [
               Icon(Icons.circle, color: Color(0xFFF0B90B), size: 6),
               SizedBox(width: 5),
               Text('Binance Live',
@@ -288,8 +288,8 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
     }
 
     if (_pnl == null) {
-      return GlassCard(
-          child: const Padding(
+      return const GlassCard(
+          child: Padding(
         padding: EdgeInsets.all(20),
         child: Row(children: [
           Icon(Icons.key_outlined, color: AppTheme.textTertiary, size: 20),
@@ -547,11 +547,11 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
       ]),
       const SizedBox(height: 16),
       if (vals.isEmpty)
-        SizedBox(
+        const SizedBox(
             height: 100,
             child: Center(
                 child: Text('No data for this period',
-                    style: const TextStyle(
+                    style: TextStyle(
                         color: AppTheme.textTertiary, fontSize: 11))))
       else
         _lineChart(vals, pts, color),
@@ -997,7 +997,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                     fontSize: 12,
                     fontWeight: FontWeight.w600)),
             const SizedBox(height: 12),
-            Center(
+            const Center(
                 child: SizedBox(
                     width: 80,
                     height: 80,
@@ -1184,9 +1184,10 @@ class _LinePainter extends CustomPainter {
     final gp = Paint()
       ..color = AppTheme.border
       ..strokeWidth = 0.5;
-    for (int i = 0; i < 4; i++)
+    for (int i = 0; i < 4; i++) {
       canvas.drawLine(Offset(0, vp + i * (h - vp * 2) / 3),
           Offset(w, vp + i * (h - vp * 2) / 3), gp);
+    }
 
     if (minV < 0 && maxV > 0) {
       canvas.drawLine(

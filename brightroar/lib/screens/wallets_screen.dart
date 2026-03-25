@@ -172,7 +172,7 @@ class _WalletsScreenState extends State<WalletsScreen>
             child: _syncing
                 ? const SizedBox(width: 14, height: 14,
                     child: CircularProgressIndicator(color: Color(0xFFF0B90B), strokeWidth: 2))
-                : Row(children: const [
+                : const Row(children: [
                     Icon(Icons.sync, color: Color(0xFFF0B90B), size: 14),
                     SizedBox(width: 4),
                     Text('Sync', style: TextStyle(
@@ -188,9 +188,9 @@ class _WalletsScreenState extends State<WalletsScreen>
               color: AppTheme.primary.withOpacity(0.1),
               borderRadius: BorderRadius.circular(10),
               border: Border.all(color: AppTheme.primary.withOpacity(0.3))),
-          child: Row(children: [
-            const Icon(Icons.add_circle_outline, color: AppTheme.primary, size: 16),
-            const SizedBox(width: 6),
+          child: const Row(children: [
+            Icon(Icons.add_circle_outline, color: AppTheme.primary, size: 16),
+            SizedBox(width: 6),
             Text('Add Wallet', style: TextStyle(
                 color: AppTheme.primary, fontSize: 13, fontWeight: FontWeight.w500)),
           ])),

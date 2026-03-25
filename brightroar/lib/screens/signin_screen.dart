@@ -189,8 +189,8 @@ class _SignInScreenState extends State<SignInScreen> {
                   context,
                   MaterialPageRoute(builder: (_) => const RegisterScreen()),
                 ),
-                child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-                  const Text('New to Brightroar? ', style: TextStyle(color: AppTheme.textSecondary, fontSize: 13)),
+                child: const Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+                  Text('New to Brightroar? ', style: TextStyle(color: AppTheme.textSecondary, fontSize: 13)),
                   Text('Create an Account', style: TextStyle(color: AppTheme.primary, fontSize: 13, fontWeight: FontWeight.w600)),
                 ]),
               ),

@@ -4,7 +4,7 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
 class ApiClient {
-  static const String _baseUrl = 'http://10.13.108.6:8000/api/v1';
+  static const String _baseUrl = 'http://10.43.40.6:8000/api/v1';
   static const String _tokenKey = 'access_token';
   static const String _refreshKey = 'refresh_token';
 
@@ -138,7 +138,7 @@ class ApiClient {
       }
       // Refresh failed or retry also failed — clear tokens and force re-login
       await clearTokens();
-      throw ApiException(statusCode: 401, message: 'Session expired. Please login again.');
+      throw const ApiException(statusCode: 401, message: 'Session expired. Please login again.');
     }
     if (response.statusCode >= 200 && response.statusCode < 300) {
       if (response.body.isEmpty) return {};

@@ -37,11 +37,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
         ApiClient.getTransactions(pageSize: 5),
         ApiClient.getPerformance(period: '1m'),
       ]);
-      _portfolio   = results[0] as Map<String, dynamic>;
-      _wallets     = results[1] as Map<String, dynamic>;
-      _prices      = results[2] as Map<String, dynamic>;
-      _activity    = (results[3] as Map<String, dynamic>)['transactions'] ?? [];
-      _performance = results[4] as Map<String, dynamic>;
+      _portfolio   = results[0];
+      _wallets     = results[1];
+      _prices      = results[2];
+      _activity    = (results[3])['transactions'] ?? [];
+      _performance = results[4];
 
       try { _binance = await ApiClient.getBinanceAccount(); } catch (_) { _binance = null; }
 
@@ -290,7 +290,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
       ]),
       const SizedBox(height: 12),
       wallets.isEmpty
-        ? GlassCard(child: const Padding(padding: EdgeInsets.all(16),
+        ? const GlassCard(child: Padding(padding: EdgeInsets.all(16),
             child: Row(children: [Icon(Icons.info_outline, color: AppTheme.textTertiary, size: 18), SizedBox(width: 10),
               Expanded(child: Text('No wallets yet. Go to Wallets tab to create one.',
                 style: TextStyle(color: AppTheme.textSecondary, fontSize: 13)))])))
@@ -390,7 +390,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               return Padding(padding: const EdgeInsets.only(bottom: 10),
                 child: Row(children: [
                   Container(width: 30, height: 30,
-                    decoration: BoxDecoration(color: AppTheme.surfaceElevated, shape: BoxShape.circle),
+                    decoration: const BoxDecoration(color: AppTheme.surfaceElevated, shape: BoxShape.circle),
                     child: Center(child: Text((a['asset'] ?? '?').toString().substring(0, 1),
                       style: const TextStyle(color: AppTheme.primary, fontWeight: FontWeight.w700, fontSize: 12)))),
                   const SizedBox(width: 10),
@@ -494,7 +494,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
       const Text('Recent Activity', style: TextStyle(color: AppTheme.textPrimary, fontSize: 16, fontWeight: FontWeight.w600)),
       const SizedBox(height: 12),
       _activity.isEmpty
-        ? GlassCard(child: const Padding(padding: EdgeInsets.all(20),
+        ? const GlassCard(child: Padding(padding: EdgeInsets.all(20),
             child: Center(child: Text('No transactions yet', style: TextStyle(color: AppTheme.textSecondary)))))
         : GlassCard(padding: EdgeInsets.zero, child: ListView.separated(
             shrinkWrap: true, physics: const NeverScrollableScrollPhysics(),
@@ -563,13 +563,19 @@ class _RealLineChartPainter extends CustomPainter {
 
     // Grid
     final gridPaint = Paint()..color = AppTheme.border..strokeWidth = 0.5;
-    for (int i = 0; i < 4; i++) canvas.drawLine(Offset(0, h * i / 3), Offset(w, h * i / 3), gridPaint);
+    for (int i = 0; i < 4; i++) {
+      canvas.drawLine(Offset(0, h * i / 3), Offset(w, h * i / 3), gridPaint);
+    }
 
     // Fill
     final fillPath = Path()..moveTo(0, h);
     for (int i = 0; i < points.length; i++) {
       final x = i * step; final y = h - (points[i] * h * 0.85);
-      if (i == 0) fillPath.lineTo(x, y); else fillPath.lineTo(x, y);
+      if (i == 0) {
+        fillPath.lineTo(x, y);
+      } else {
+        fillPath.lineTo(x, y);
+      }
     }
     fillPath..lineTo(w, h)..close();
     canvas.drawPath(fillPath, Paint()..shader = LinearGradient(
@@ -586,7 +592,11 @@ class _RealLineChartPainter extends CustomPainter {
     final linePath = Path();
     for (int i = 0; i < points.length; i++) {
       final x = i * step; final y = h - (points[i] * h * 0.85);
-      if (i == 0) linePath.moveTo(x, y); else linePath.lineTo(x, y);
+      if (i == 0) {
+        linePath.moveTo(x, y);
+      } else {
+        linePath.lineTo(x, y);
+      }
     }
     canvas.drawPath(linePath, Paint()..color = AppTheme.primary..strokeWidth = 2..style = PaintingStyle.stroke..strokeCap = StrokeCap.round);
     // Last dot

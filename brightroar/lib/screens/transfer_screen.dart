@@ -11,7 +11,7 @@ class TransferScreen extends StatefulWidget {
 }
 
 class _TransferScreenState extends State<TransferScreen> {
-  int _step = 1;
+  final int _step = 1;
   bool _showBiometricDialog = false;
   bool _loading = true;
   bool _submitting = false;
@@ -294,9 +294,9 @@ class _TransferScreenState extends State<TransferScreen> {
                                   controller: _amountController,
                                   keyboardType: const TextInputType.numberWithOptions(decimal: true),
                                   style: const TextStyle(color: AppTheme.textPrimary, fontSize: 14),
-                                  decoration: InputDecoration(
+                                  decoration: const InputDecoration(
                                     hintText: '0.00',
-                                    hintStyle: const TextStyle(color: AppTheme.textTertiary),
+                                    hintStyle: TextStyle(color: AppTheme.textTertiary),
                                     border: InputBorder.none,
                                     enabledBorder: InputBorder.none,
                                     focusedBorder: InputBorder.none),
@@ -342,14 +342,14 @@ class _TransferScreenState extends State<TransferScreen> {
                                 color: AppTheme.primary.withOpacity(0.08),
                                 borderRadius: BorderRadius.circular(8)),
                               // Fixed overflow: wrapped text in Flexible
-                              child: Row(
+                              child: const Row(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
-                                  const Icon(Icons.security, color: AppTheme.primary, size: 14),
-                                  const SizedBox(width: 6),
+                                  Icon(Icons.security, color: AppTheme.primary, size: 14),
+                                  SizedBox(width: 6),
                                   Flexible(child: Text(
                                     'APPROVE WITH BIOMETRICS',
-                                    style: const TextStyle(
+                                    style: TextStyle(
                                       color: AppTheme.primary,
                                       fontSize: 11,
                                       fontWeight: FontWeight.w600,
@@ -379,11 +379,11 @@ class _TransferScreenState extends State<TransferScreen> {
                             color: AppTheme.surfaceCard,
                             borderRadius: BorderRadius.circular(10),
                             border: Border.all(color: AppTheme.border)),
-                          child: Row(children: [
-                            const Text('Estimated Network Fee',
+                          child: const Row(children: [
+                            Text('Estimated Network Fee',
                               style: TextStyle(color: AppTheme.textSecondary, fontSize: 13)),
-                            const Spacer(),
-                            const Text('~\$2.40 USDT',
+                            Spacer(),
+                            Text('~\$2.40 USDT',
                               style: TextStyle(color: AppTheme.textPrimary, fontSize: 13, fontWeight: FontWeight.w500)),
                           ]),
                         ),
